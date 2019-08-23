@@ -52,7 +52,7 @@ jquery-detached:1.2.1
 jsch:0.1.55
 junit:1.27
 kubernetes-credentials:0.4.0
-kubernetes:1.14.8
+kubernetes:1.18.1
 lockable-resources:2.4
 mailer:1.23
 mapdb-api:1.0.9.0
