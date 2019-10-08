@@ -1,26 +1,54 @@
 <?xml version='1.1' encoding='UTF-8'?>
-<project>
-  <actions/>
-  <description>Groovy script used to seed Jenkins with multi-branch pipeline jobs:&#xd;
-1. Call GitLab API to get each git repo in a given project&#xd;
-2. Check if project is archived, if so skip it.&#xd;
-3. Check if there is a Jenkinsfile (on master) in each of the found projects&#xd;
-4. Generate a pipeline using the Jenkinsfile and add it to the queue on first creation&#xd;
-5. Every 10 mins run again</description>
+<flow-definition plugin="workflow-job@2.32">
+  <actions>
+    <org.jenkinsci.plugins.pipeline.modeldefinition.actions.DeclarativeJobAction plugin="pipeline-model-definition@1.3.6"/>
+    <org.jenkinsci.plugins.pipeline.modeldefinition.actions.DeclarativeJobPropertyTrackerAction plugin="pipeline-model-definition@1.3.6">
+      <jobProperties/>
+      <triggers/>
+      <parameters/>
+      <options/>
+    </org.jenkinsci.plugins.pipeline.modeldefinition.actions.DeclarativeJobPropertyTrackerAction>
+  </actions>
+  <description></description>
   <keepDependencies>false</keepDependencies>
   <properties>
-    <jenkins.model.BuildDiscarderProperty>
-      <strategy class="hudson.tasks.LogRotator">
-        <daysToKeep>-1</daysToKeep>
-        <numToKeep>5</numToKeep>
-        <artifactDaysToKeep>-1</artifactDaysToKeep>
-        <artifactNumToKeep>-1</artifactNumToKeep>
-      </strategy>
-    </jenkins.model.BuildDiscarderProperty>
-    <com.sonyericsson.jenkins.plugins.bfa.model.ScannerJobProperty plugin="build-failure-analyzer@1.20.0">
+    <org.jenkinsci.plugins.workflow.job.properties.PipelineTriggersJobProperty>
+      <triggers>
+        <com.dabsquared.gitlabjenkins.GitLabPushTrigger plugin="gitlab-plugin@1.5.11">
+          <spec></spec>
+          <triggerOnPush>false</triggerOnPush>
+          <triggerOnMergeRequest>true</triggerOnMergeRequest>
+          <triggerOnPipelineEvent>false</triggerOnPipelineEvent>
+          <triggerOnAcceptedMergeRequest>false</triggerOnAcceptedMergeRequest>
+          <triggerOnClosedMergeRequest>false</triggerOnClosedMergeRequest>
+          <triggerOnApprovedMergeRequest>false</triggerOnApprovedMergeRequest>
+          <triggerOpenMergeRequestOnPush>source</triggerOpenMergeRequestOnPush>
+          <triggerOnNoteRequest>false</triggerOnNoteRequest>
+          <noteRegex>Jenkins please retry a build</noteRegex>
+          <ciSkip>true</ciSkip>
+          <skipWorkInProgressMergeRequest>true</skipWorkInProgressMergeRequest>
+          <setBuildDescription>true</setBuildDescription>
+          <branchFilterType>All</branchFilterType>
+          <includeBranchesSpec></includeBranchesSpec>
+          <excludeBranchesSpec></excludeBranchesSpec>
+          <sourceBranchRegex></sourceBranchRegex>
+          <targetBranchRegex></targetBranchRegex>
+          <secretToken>{AQAAABAAAAAwMETDuZjif9fR5VN9wr/nGnEbI9Vk0d7qJ/fvdukWdsNH8kMkPHYxAjO48GGUJZ/zPDuHaVygwJOAu62SXNrk3g==}</secretToken>
+          <pendingBuildName></pendingBuildName>
+          <cancelPendingBuildsOnUpdate>false</cancelPendingBuildsOnUpdate>
+        </com.dabsquared.gitlabjenkins.GitLabPushTrigger>
+      </triggers>
+    </org.jenkinsci.plugins.workflow.job.properties.PipelineTriggersJobProperty>
+    <io.fabric8.jenkins.openshiftsync.BuildConfigProjectProperty plugin="openshift-sync@1.0.34">
+      <uid></uid>
+      <namespace></namespace>
+      <name></name>
+      <resourceVersion></resourceVersion>
+    </io.fabric8.jenkins.openshiftsync.BuildConfigProjectProperty>
+    <com.sonyericsson.jenkins.plugins.bfa.model.ScannerJobProperty plugin="build-failure-analyzer@1.22.0">
       <doNotScan>false</doNotScan>
     </com.sonyericsson.jenkins.plugins.bfa.model.ScannerJobProperty>
-    <com.dabsquared.gitlabjenkins.connection.GitLabConnectionProperty plugin="gitlab-plugin@1.5.9">
+    <com.dabsquared.gitlabjenkins.connection.GitLabConnectionProperty plugin="gitlab-plugin@1.5.11">
       <gitLabConnection></gitLabConnection>
     </com.dabsquared.gitlabjenkins.connection.GitLabConnectionProperty>
     <org.jenkinsci.plugins.gitlablogo.GitlabLogoProperty plugin="gitlab-logo@1.0.3">
@@ -30,102 +58,31 @@
       <gogsSecret></gogsSecret>
       <gogsUsePayload>false</gogsUsePayload>
     </org.jenkinsci.plugins.gogs.GogsProjectProperty>
-    <com.sonyericsson.rebuild.RebuildSettings plugin="rebuild@1.28">
+    <com.sonyericsson.rebuild.RebuildSettings plugin="rebuild@1.29">
       <autoRebuild>false</autoRebuild>
       <rebuildDisabled>false</rebuildDisabled>
     </com.sonyericsson.rebuild.RebuildSettings>
   </properties>
-  <scm class="hudson.scm.NullSCM"/>
-  <assignedNode>master</assignedNode>
-  <canRoam>false</canRoam>
+  <definition class="org.jenkinsci.plugins.workflow.cps.CpsScmFlowDefinition" plugin="workflow-cps@2.64">
+    <scm class="hudson.plugins.git.GitSCM" plugin="git@3.9.3">
+      <configVersion>2</configVersion>
+      <userRemoteConfigs>
+        <hudson.plugins.git.UserRemoteConfig>
+          <url>git@gitlab.com:chat-up/chatup.git</url>
+          <credentialsId>sr-ci-cd-gitlab-secret</credentialsId>
+        </hudson.plugins.git.UserRemoteConfig>
+      </userRemoteConfigs>
+      <branches>
+        <hudson.plugins.git.BranchSpec>
+          <name>origin/${gitlabSourceBranch}</name>
+        </hudson.plugins.git.BranchSpec>
+      </branches>
+      <doGenerateSubmoduleConfigurations>false</doGenerateSubmoduleConfigurations>
+      <submoduleCfg class="list"/>
+      <extensions/>
+    </scm>
+    <scriptPath>Jenkinsfile_PR</scriptPath>
+    <lightweight>true</lightweight>
+  </definition>
+  <triggers/>
   <disabled>false</disabled>
-  <blockBuildWhenDownstreamBuilding>false</blockBuildWhenDownstreamBuilding>
-  <blockBuildWhenUpstreamBuilding>false</blockBuildWhenUpstreamBuilding>
-  <triggers>
-    <hudson.triggers.TimerTrigger>
-      <spec>H/10 * * * *</spec>
-    </hudson.triggers.TimerTrigger>
-  </triggers>
-  <concurrentBuild>false</concurrentBuild>
-  <builders>
-    <javaposse.jobdsl.plugin.ExecuteDslScripts plugin="job-dsl@1.70">
-      <scriptText>// Groovy script used to seed Jenkins with multi-branch pipeline jobs:
-// 1. Call GitLab API to get each git project in a given group
-// 2. Check if project is archived, if so skip it.
-// 3. Check if there is a Jenkinsfile (on master) in each of the found projects
-// 4. Generate a pipeline using the Jenkinsfile and add it to the queue on first creation
-// 5. Every 10 mins run again
-
-def gitlabHost = System.getenv(&quot;GITLAB_HOST&quot;) ?: &quot;https://gitlab.apps.proj.example.com&quot;
-def gitlabToken = System.getenv(&quot;GITLAB_TOKEN&quot;) ?: &quot;mytoken123&quot;
-def projectName = System.getenv(&quot;GITLAB_GROUP_NAME&quot;) ?: &quot;rht-labs&quot;
-def projectsApi = new URL(&quot;${gitlabHost}/api/v4/groups/${projectName}/projects?per_page=100&quot;)
-
-
-try {
-    def projects = new groovy.json.JsonSlurper().parse(projectsApi.newReader(requestProperties: [&apos;PRIVATE-TOKEN&apos;: gitlabToken]))
-
-    projects.each {
-        def project = &quot;${it.path}&quot;
-        def gitPath = it.http_url_to_repo
-
-        if (it.archived) {
-            print &quot;skipping project ${project} because it has been archived\n\n&quot;
-            return
-        }
-
-        try {
-            def filesApi = new URL(&quot;${gitlabHost}/api/v4/projects/${it.id}/repository/files/Jenkinsfile?ref=master&quot;)
-            def files = new groovy.json.JsonSlurper().parse(filesApi.newReader(requestProperties: [&apos;PRIVATE-TOKEN&apos;: gitlabToken]))
-
-            if (!jenkins.model.Jenkins.instance.getItemByFullName(project)) {
-                print &quot;About to create ${project} for the first time, this will result in a triggering the build after this run to prepare the ${project} pipeline\n\n&quot;
-                queue(project)
-            }
-
-            // Build Jenkins multibranc jobs
-            multibranchPipelineJob(project) {
-                branchSources {
-                    git {
-                        remote(gitPath)
-                        credentialsId(&apos;labs-ci-cd-jenkins-git-password&apos;)
-                    }
-                }
-                triggers {
-                    periodic(1)
-                }
-                orphanedItemStrategy {
-                    discardOldItems {
-                        numToKeep(10)
-                    }
-                }
-            }
-        }
-        catch(Exception e) {
-                println e
-                print &quot;skipping project ${project} because it has no Jenkinsfile\n\n&quot;
-        }
-    }
-} catch(Exception e) {
-    print &quot;\n\n Please make sure you have set  GITLAB_HOST, GITLAB_TOKEN and GITLAB_GROUP_NAME in your deploy config for Jenkins \n\n\n&quot;
-    throw e
-}</scriptText>
-      <usingScriptText>true</usingScriptText>
-      <sandbox>false</sandbox>
-      <ignoreExisting>true</ignoreExisting>
-      <ignoreMissingFiles>false</ignoreMissingFiles>
-      <failOnMissingPlugin>false</failOnMissingPlugin>
-      <unstableOnDeprecation>false</unstableOnDeprecation>
-      <removedJobAction>DELETE</removedJobAction>
-      <removedViewAction>DELETE</removedViewAction>
-      <removedConfigFilesAction>DELETE</removedConfigFilesAction>
-      <lookupStrategy>JENKINS_ROOT</lookupStrategy>
-    </javaposse.jobdsl.plugin.ExecuteDslScripts>
-  </builders>
-  <publishers/>
-  <buildWrappers>
-    <hudson.plugins.ansicolor.AnsiColorBuildWrapper plugin="ansicolor@0.5.2">
-      <colorMapName>xterm</colorMapName>
-    </hudson.plugins.ansicolor.AnsiColorBuildWrapper>
-  </buildWrappers>
-</project>
