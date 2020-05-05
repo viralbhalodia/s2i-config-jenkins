@@ -36,6 +36,7 @@ build-monitor-plugin:1.12+build.201809061734
 build-pipeline-plugin:1.5.8
 buildresult-trigger:0.17
 build-with-parameters:1.4
+checkmarx:8.90.4
 checkstyle:4.0.0
 claim:2.15
 cloudbees-bitbucket-branch-source:2.4.6
