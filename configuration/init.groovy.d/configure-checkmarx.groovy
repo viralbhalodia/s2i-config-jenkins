@@ -13,8 +13,8 @@ if(checkmarxBaseUrl != null) {
 
   def checkmarx = Jenkins.instance.getDescriptorByType(com.checkmarx.jenkins.CxScanBuilder.DescriptorImpl)
 
-  checkmarx.baseUrl = checkmarxBaseUrl
-  checkmarx.tokenCredentialId = checkmarxCredentialId ? System.getenv('OPENSHIFT_BUILD_NAMESPACE') + "-" + checkmarxCredentialId : ''
+  checkmarx.serverUrl = checkmarxBaseUrl
+  checkmarx.credentialsId = checkmarxCredentialId ? System.getenv('OPENSHIFT_BUILD_NAMESPACE') + "-" + checkmarxCredentialId : ''
   checkmarx.save()
 
   LOG.log(Level.INFO,  'Configured checkmarx' )
