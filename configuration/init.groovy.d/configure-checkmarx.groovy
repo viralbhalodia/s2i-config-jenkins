@@ -4,12 +4,12 @@ import java.util.logging.Logger
 
 final def LOG = Logger.getLogger("LABS")
 
-def checkmarxBaseUrl = System.getenv('SLACK_BASE_URL') // TODO: update
+def checkmarxBaseUrl = System.getenv('CHECKMARX_SERVER_URL')
 
 if(checkmarxBaseUrl != null) {
   LOG.log(Level.INFO,  'Configuring checkmarx...' )
 
-  def checkmarxCredentialId = "jenkins-git-password" // TODO: update
+  def checkmarxCredentialId = System.getenv('CHECKMARX_CREDENTIAL_ID')
 
   def checkmarx = Jenkins.instance.getDescriptorByType(com.checkmarx.jenkins.CxScanBuilder.DescriptorImpl)
 
